@@ -14,6 +14,13 @@ if [ ! -d "$ROOT_DIR/$1" ]; then
 fi
 
 SERVICE=$1
+SERVICE_DIR="$ROOT_DIR/$SERVICE"
+TEST_SERVICE_OWNER=$(find "$SERVICE_DIR" -maxdepth 0 -user "$(id -u)")
+if [ ! -n "$TEST_SERVICE_OWNER" ]; then
+    OWNER=$(find "$SERVICE_DIR" -maxdepth 0 -printf '%u')
+    echo "This script must be run by the owner of $SERVICE_DIR, $OWNER"
+fi
+
 
 if [ ! -f "$2" ]; then
     echo "$2 not found"
@@ -32,12 +39,11 @@ if [ ! -f "$TMP/$LEVEL_NAME/db/CURRENT" ]; then
 fi
 
 systemctl stop "mcbe@$SERVICE.service"
-WORLD_DIR="$ROOT_DIR/$SERVICE/worlds"
+WORLD_DIR="$SERVICE_DIR/worlds"
 DATE_PART=$(date +%Y/%b/%d_%H-%M.zip)
 TARGET_FILE="$ROOT_DIR/backup_dir/${SERVICE}_Backups/${LEVEL_NAME}_Backups/$DATE_PART"
 (cd "$WORLD_DIR"; sudo zip -r "$TARGET_FILE" "$LEVEL_NAME")
 cp -a "$TMP/$LEVEL_NAME" "$WORLD_DIR/"
-chown -R mc:nogroup "$WORLD_DIR"
 systemctl start "mcbe@$SERVICE.service"
 
 rm -r "$TMP"
