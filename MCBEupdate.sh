@@ -7,7 +7,7 @@ syntax='Usage: MCBEupdate.sh SERVER_DIR MINECRAFT_ZIP`'
 case $1 in
 --help|-h)
 	echo "$syntax"
-	echo Update Minecraft Bedrock Edition server keeping packs, worlds, JSON files, and PROPERTIES files. Other files will be removed. You can convert a Windows SERVER_DIR to Ubuntu and vice versa.
+	echo Update Minecraft Bedrock Edition server keeping packs, worlds, JSON files, and PROPERTIES files. Other files will be removed. You can convert a Windows SERVER_DIR to Ubuntu and vice versa if you convert line endings.
 	echo
 	echo MINECRAFT_ZIP cannot be in SERVER_DIR. Remember to stop server before updating.
 	exit
@@ -49,7 +49,7 @@ if [ -f "$backup_dir" ]; then
 fi
 mv "$server_dir" "$backup_dir"
 trap 'rm -rf "$server_dir"; mv "$backup_dir" "$server_dir"; echo fail > "$server_dir/version"' ERR
-unzip "$minecraft_zip" -d "$server_dir"
+unzip -q "$minecraft_zip" -d "$server_dir"
 
 cd "$server_dir"
 # Trim off $minecraft_zip after last .zip
@@ -64,7 +64,7 @@ for pack_dir in *_packs; do
 		fi
 	done
 done
-for file in worlds *.json *.properties; do
+for file in worlds *.{json,properties}; do
 	cp -r "$backup_dir/$file" .
 done
 rm -r "$backup_dir"

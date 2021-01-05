@@ -2,12 +2,13 @@
 
 # Exit if error
 set -e
+epoch=$(date +%s)
+thyme=$(date --date "@$epoch" +%H-%M)
+date=$(date --date "@$epoch" +%d)
+month=$(date --date "@$epoch" +%b)
+year=$(date --date "@$epoch" +%Y)
 syntax='Usage: MCBEbackup.sh [OPTION] ... SERVER_DIR SERVICE'
 # Filenames can't contain : on some filesystems
-thyme=$(date +%H-%M)
-date=$(date +%d)
-month=$(date +%b)
-year=$(date +%Y)
 
 server_do() {
 	timestamp=$(date '+%Y-%m-%d %H:%M:%S')
@@ -145,7 +146,8 @@ done
 # grep only matching strings from line
 # ${world}not :...:#...
 # Minecraft Bedrock Edition says $file:$bytes, $file:$bytes, ...
-files=$(echo "$buffer" | grep -Eo "$world[^:]+:[0-9]+")
+# journald LineMax splits lines so delete newlines
+files=$(echo "$buffer" | tr -d '\n' | grep -Eo "$world[^:]+:[0-9]+")
 
 mkdir -p "$temp_dir"
 # zip restores path of directory given to it ($world), not just the directory itself
@@ -171,7 +173,7 @@ echo "$files" | while read -r line; do
 	cp "$worlds_dir/$file" "$dir/"
 	truncate --size="$length" "$file"
 done
-zip -r "$backup_zip" "$world"
+zip -rq "$backup_zip" "$world"
 echo "Backup is $backup_zip"
 rm -r "$world"
 server_do save resume

@@ -2,12 +2,13 @@
 
 # Exit if error
 set -e
+epoch=$(date +%s)
+thyme=$(date --date "@$epoch" +%H-%M)
+date=$(date --date "@$epoch" +%d)
+month=$(date --date "@$epoch" +%b)
+year=$(date --date "@$epoch" +%Y)
 syntax='Usage: MCbackup.sh [OPTION] ... SERVER_DIR SERVICE'
 # Filenames can't contain : on some filesystems
-thyme=$(date +%H-%M)
-date=$(date +%d)
-month=$(date +%b)
-year=$(date +%Y)
 
 server_do() {
 	timestamp=$(date '+%Y-%m-%d %H:%M:%S')
@@ -134,7 +135,7 @@ done
 # zip restores path of directory given to it ($world), not just the directory itself
 cd "$server_dir"
 trap 'server_do save-on; rm -f "$backup_zip"' ERR
-zip -r "$backup_zip" "$world"
+zip -rq "$backup_zip" "$world"
 echo "Backup is $backup_zip"
 server_do save-on
 server_do say "Well that's better now, isn't it?"
