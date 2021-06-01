@@ -5,9 +5,9 @@ set -e
 epoch=$(date +%s)
 thyme=$(date --date "@$epoch" +%H-%M)
 date=$(date --date "@$epoch" +%d)
-month=$(date --date "@$epoch" +%b)
+month=$(date --date "@$epoch" +%m)
 year=$(date --date "@$epoch" +%Y)
-syntax='Usage: MCbackup.sh [OPTION] ... SERVER_DIR SERVICE'
+syntax='Usage: mc_backup.sh [OPTION]... SERVER_DIR SERVICE'
 # Filenames can't contain : on some filesystems
 
 server_do() {
@@ -51,7 +51,7 @@ while [ "$1"  != -- ]; do
 		echo Mandatory arguments to long options are mandatory for short options too.
 		echo '-b, --backup-dir=BACKUP_DIR  directory backups go in. defaults to ~. best on another drive'
 		echo
-		echo 'Backups are {SERVER_DIR}_Backups/{WORLD}_Backups/YEAR/MONTH/{DATE}_HOUR-MINUTE.zip in BACKUP_DIR.'
+		echo 'Backups are {SERVER_DIR}_backups/{WORLD}_backups/YYYY/MM/{DATE}_HOUR-MINUTE.zip in BACKUP_DIR.'
 		exit
 		;;
 	esac
@@ -87,7 +87,7 @@ if [ -n "$backup_dir" ]; then
 else
 	backup_dir=~
 fi
-backup_dir=$backup_dir/java/$(basename "$server_dir")_Backups/${world}_Backups/$year/$month
+backup_dir=$backup_dir/java/$(basename "$server_dir")_backups/${world}_backups/$year/$month
 # Make directory and parents quietly
 mkdir -p "$backup_dir"
 backup_zip=$backup_dir/${date}_$thyme.zip
@@ -118,18 +118,16 @@ server_do save-off
 trap 'server_do save-on' ERR
 # Pause and save the server
 server_do save-all flush
-timeout=0
+timeout=$(date -d '1 minute' +%s)
 unset buffer
 # Minecraft says [HH:MM:SS] [Server thread/INFO]: Saved the game
 until echo "$buffer" | grep -q 'Saved the game'; do
-	# 1 minute timeout because server_read sleeps 1 second
-	if [ "$timeout" = 60 ]; then
+	if [ "$(date +%s)" -ge "$timeout" ]; then
 		server_do save resume
 		>&2 echo save query timeout
 		exit 1
 	fi
 	server_read
-	timeout=$(( ++timeout ))
 done
 
 # zip restores path of directory given to it ($world), not just the directory itself

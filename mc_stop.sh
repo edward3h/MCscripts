@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-syntax='Usage: MCstop.sh [OPTION] ... SERVICE'
+syntax='Usage: mc_stop.sh [OPTION]... SERVICE'
 
 server_do() {
 	echo "$*" > "/run/$service"
@@ -53,8 +53,10 @@ elif [ "$#" -gt 1 ]; then
 fi
 
 service=$1
-main_pid=$(systemctl show "$service" -p MainPID --value)
-if [ "$main_pid" = 0 ]; then
+if [ -z "$MAINPID" ]; then
+	MAINPID=$(systemctl show "$service" -p MainPID --value)
+fi
+if [ "$MAINPID" = 0 ]; then
 	echo "Service $service already stopped"
 	exit
 fi
@@ -74,5 +76,5 @@ for x in {3..1}; do
 	fi
 done
 server_do stop
-# Follow /dev/null until $main_pid dies
-tail -f --pid "$main_pid" /dev/null
+# Follow /dev/null until $MAINPID dies
+tail -f --pid "$MAINPID" /dev/null

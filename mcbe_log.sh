@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-syntax='Usage: MCBElog.sh SERVICE'
+syntax='Usage: mcbe_log.sh SERVICE'
 
 send() {
 	if [ -f "$webhook_file" ]; then
@@ -44,8 +44,8 @@ fi
 
 # Trim off $service before last @
 instance=${service##*@}
-webhook_file=~mc/.MCBE_Bot/${instance}_BotWebhook.txt
-chmod -f 600 "$webhook_file"
+webhook_file=~mc/.mcbe_log/${instance}_webhook.txt
+chmod 600 "$webhook_file"
 
 send "Server $instance starting"
 trap 'send "Server $instance stopping"; pkill -s $$' EXIT
